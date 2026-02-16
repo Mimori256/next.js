@@ -253,6 +253,7 @@ export interface AdapterOutput {
     filePath: string
     pathname: string
     type: AdapterOutputType.STATIC_FILE
+    immutable: boolean
   }
 
   /**
@@ -478,6 +479,7 @@ export async function handleBuildComplete({
           pathname,
           filePath: path.join(configOutDir, file),
           type: AdapterOutputType.STATIC_FILE,
+          immutable: false,
         } satisfies AdapterOutput['STATIC_FILE'])
       }
     } else {
@@ -491,6 +493,9 @@ export async function handleBuildComplete({
           id: path.join('static', file),
           pathname,
           filePath,
+          immutable:
+            bundler === Bundler.Turbopack &&
+            (file.startsWith('/chunks/') || file.startsWith('/media/')),
         })
       }
 
@@ -831,6 +836,7 @@ export async function handleBuildComplete({
                   pagesDistDir,
                   `${normalizePagePath(localePage)}.html`
                 ),
+                immutable: false,
               } satisfies AdapterOutput['STATIC_FILE']
 
               outputs.staticFiles.push(localeOutput)
@@ -841,6 +847,7 @@ export async function handleBuildComplete({
                   pathname: `${localePage}.rsc`,
                   type: AdapterOutputType.STATIC_FILE,
                   filePath: rscFallbackPath,
+                  immutable: false,
                 })
               }
             }
@@ -850,6 +857,7 @@ export async function handleBuildComplete({
               pathname: route,
               type: AdapterOutputType.STATIC_FILE,
               filePath: pageFile.replace(/\.js$/, '.html'),
+              immutable: false,
             } satisfies AdapterOutput['STATIC_FILE']
 
             outputs.staticFiles.push(staticOutput)
@@ -860,6 +868,7 @@ export async function handleBuildComplete({
                 pathname: `${route}.rsc`,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: rscFallbackPath,
+                immutable: false,
               })
             }
           }
@@ -922,6 +931,7 @@ export async function handleBuildComplete({
                 pathname: rscPage,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: rscFallbackPath,
+                immutable: false,
               })
             }
           }
@@ -953,6 +963,7 @@ export async function handleBuildComplete({
                   pathname: `${localePage}.rsc`,
                   type: AdapterOutputType.STATIC_FILE,
                   filePath: rscFallbackPath,
+                  immutable: false,
                 })
               }
             }
@@ -1314,6 +1325,7 @@ export async function handleBuildComplete({
               pathname: route,
               type: AdapterOutputType.STATIC_FILE,
               filePath: staticMetadataFilePath,
+              immutable: false,
             })
             continue
           }
@@ -1438,6 +1450,7 @@ export async function handleBuildComplete({
             pathname: rscPage,
             type: AdapterOutputType.STATIC_FILE,
             filePath: rscFallbackPath,
+            immutable: false,
           })
         }
 
@@ -1625,6 +1638,7 @@ export async function handleBuildComplete({
               pathname: rscPage,
               type: AdapterOutputType.STATIC_FILE,
               filePath: rscFallbackPath,
+              immutable: false,
             })
           }
 
@@ -1732,6 +1746,7 @@ export async function handleBuildComplete({
                 pathname: rscPage,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: rscFallbackPath,
+                immutable: false,
               })
             }
 
@@ -1786,6 +1801,7 @@ export async function handleBuildComplete({
                 id: currentDocPath,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: currentFilePath,
+                immutable: false,
               })
             }
           }
