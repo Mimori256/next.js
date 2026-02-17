@@ -253,7 +253,7 @@ export interface AdapterOutput {
     filePath: string
     pathname: string
     type: AdapterOutputType.STATIC_FILE
-    immutable: boolean
+    immutable: string | undefined
   }
 
   /**
@@ -479,23 +479,38 @@ export async function handleBuildComplete({
           pathname,
           filePath: path.join(configOutDir, file),
           type: AdapterOutputType.STATIC_FILE,
-          immutable: false,
+          immutable: undefined,
         } satisfies AdapterOutput['STATIC_FILE'])
       }
     } else {
       const staticFiles = await recursiveReadDir(path.join(distDir, 'static'))
 
+      let clientHashes: Record<string, string> | undefined = undefined
+      if (bundler === Bundler.Turbopack) {
+        clientHashes = {}
+        for (const manifestFile of await recursiveReadDir(
+          path.join(distDir, 'server'),
+          {
+            pathnameFilter: (file) => file.endsWith('client-hashes.json'),
+            relativePathnames: false,
+          }
+        )) {
+          const manifestContent = JSON.parse(
+            await fs.readFile(manifestFile, 'utf8')
+          ) as Record<string, string>
+          Object.assign(clientHashes, manifestContent)
+        }
+      }
       for (const file of staticFiles) {
         const pathname = path.posix.join('/_next/static', file)
         const filePath = path.join(distDir, 'static', file)
+        const id = path.join('static', file)
         outputs.staticFiles.push({
           type: AdapterOutputType.STATIC_FILE,
-          id: path.join('static', file),
+          id,
           pathname,
           filePath,
-          immutable:
-            bundler === Bundler.Turbopack &&
-            (file.startsWith('/chunks/') || file.startsWith('/media/')),
+          immutable: clientHashes?.[id],
         })
       }
 
@@ -836,7 +851,7 @@ export async function handleBuildComplete({
                   pagesDistDir,
                   `${normalizePagePath(localePage)}.html`
                 ),
-                immutable: false,
+                immutable: undefined,
               } satisfies AdapterOutput['STATIC_FILE']
 
               outputs.staticFiles.push(localeOutput)
@@ -847,7 +862,7 @@ export async function handleBuildComplete({
                   pathname: `${localePage}.rsc`,
                   type: AdapterOutputType.STATIC_FILE,
                   filePath: rscFallbackPath,
-                  immutable: false,
+                  immutable: undefined,
                 })
               }
             }
@@ -857,7 +872,7 @@ export async function handleBuildComplete({
               pathname: route,
               type: AdapterOutputType.STATIC_FILE,
               filePath: pageFile.replace(/\.js$/, '.html'),
-              immutable: false,
+              immutable: undefined,
             } satisfies AdapterOutput['STATIC_FILE']
 
             outputs.staticFiles.push(staticOutput)
@@ -868,7 +883,7 @@ export async function handleBuildComplete({
                 pathname: `${route}.rsc`,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: rscFallbackPath,
-                immutable: false,
+                immutable: undefined,
               })
             }
           }
@@ -931,7 +946,7 @@ export async function handleBuildComplete({
                 pathname: rscPage,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: rscFallbackPath,
-                immutable: false,
+                immutable: undefined,
               })
             }
           }
@@ -963,7 +978,7 @@ export async function handleBuildComplete({
                   pathname: `${localePage}.rsc`,
                   type: AdapterOutputType.STATIC_FILE,
                   filePath: rscFallbackPath,
-                  immutable: false,
+                  immutable: undefined,
                 })
               }
             }
@@ -1325,7 +1340,7 @@ export async function handleBuildComplete({
               pathname: route,
               type: AdapterOutputType.STATIC_FILE,
               filePath: staticMetadataFilePath,
-              immutable: false,
+              immutable: undefined,
             })
             continue
           }
@@ -1450,7 +1465,7 @@ export async function handleBuildComplete({
             pathname: rscPage,
             type: AdapterOutputType.STATIC_FILE,
             filePath: rscFallbackPath,
-            immutable: false,
+            immutable: undefined,
           })
         }
 
@@ -1638,7 +1653,7 @@ export async function handleBuildComplete({
               pathname: rscPage,
               type: AdapterOutputType.STATIC_FILE,
               filePath: rscFallbackPath,
-              immutable: false,
+              immutable: undefined,
             })
           }
 
@@ -1746,7 +1761,7 @@ export async function handleBuildComplete({
                 pathname: rscPage,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: rscFallbackPath,
-                immutable: false,
+                immutable: undefined,
               })
             }
 
@@ -1801,7 +1816,7 @@ export async function handleBuildComplete({
                 id: currentDocPath,
                 type: AdapterOutputType.STATIC_FILE,
                 filePath: currentFilePath,
-                immutable: false,
+                immutable: undefined,
               })
             }
           }
