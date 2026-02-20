@@ -1070,5 +1070,16 @@
   "1069": "Invariant: cache entry \"%s\" not found in dir \"%s\"",
   "1070": "image of size %s could not be tracked by lru cache",
   "1071": "toNodeDebugChannel cannot be used in edge/web runtime, this is a bug in the Next.js codebase",
-  "1072": "Missing segment data: <head>"
+  "1072": "Missing segment data: <head>",
+  "1073": "Route \"%s\": %s Except for this instance, the page would have been entirely prerenderable which may have been the intended behavior. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata",
+  "1074": "Route \"%s\": Uncached data or \\`connection()\\` was accessed inside \\`generateViewport\\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport",
+  "1075": "Route \"%s\": %s This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route",
+  "1076": "Route \"%s\": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route",
+  "1077": "Route \"%s\": Uncached data or \\`connection()\\` was accessed inside \\`generateMetadata\\`. Except for this instance, the page would have been entirely prerenderable which may have been the intended behavior. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata",
+  "1078": "Route \"%s\": Runtime data such as \\`cookies()\\`, \\`headers()\\`, \\`params\\`, or \\`searchParams\\` was accessed inside \\`generateViewport\\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport",
+  "1079": "Route \"%s\": Could not validate \\`unstable_instant\\` because a Client Component in a parent segment prevented the page from rendering.",
+  "1080": "Route \"%s\": Runtime data such as \\`cookies()\\`, \\`headers()\\`, \\`params\\`, or \\`searchParams\\` was accessed outside of \\`<Suspense>\\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route",
+  "1081": "Route \"%s\": Uncached data or \\`connection()\\` was accessed outside of \\`<Suspense>\\`. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route",
+  "1082": "Route \"%s\": Runtime data such as \\`cookies()\\`, \\`headers()\\`, \\`params\\`, or \\`searchParams\\` was accessed inside \\`generateMetadata\\` or you have file-based metadata such as icons that depend on dynamic params segments. Except for this instance, the page would have been entirely prerenderable which may have been the intended behavior. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata",
+  "1083": "Route \"%s\": %s This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport"
 }
