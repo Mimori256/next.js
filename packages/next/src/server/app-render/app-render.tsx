@@ -12,6 +12,7 @@ import type {
   InitialRSCPayload,
   FlightDataPath,
 } from '../../shared/lib/app-router-types'
+import { ResponseCompletenessMarker } from '../../shared/lib/app-router-types'
 import type { Readable } from 'node:stream'
 import {
   workAsyncStorage,
@@ -1309,20 +1310,14 @@ async function prospectiveRuntimeServerPrerender(
   }
 }
 
-/**
- * Prepends a single ASCII byte to the stream indicating whether the response
- * is partial (contains dynamic holes): '~' (0x7e) for partial, '#' (0x23)
- * for complete.
- */
-function prependIsPartialByte(
+function prependCompletenessMarker(
   stream: ReadableStream<Uint8Array>,
-  isPartial: boolean
+  completenessMarker: ResponseCompletenessMarker
 ): ReadableStream<Uint8Array> {
-  const byte = new Uint8Array([isPartial ? 0x7e : 0x23])
   return stream.pipeThrough(
     new TransformStream({
       start(controller) {
-        controller.enqueue(byte)
+        controller.enqueue(new Uint8Array([completenessMarker]))
       },
     })
   )
@@ -1452,8 +1447,12 @@ async function finalRuntimeServerPrerender(
     }
   )
 
-  // Prepend a byte indicating whether the response contains dynamic holes.
-  result.prelude = prependIsPartialByte(result.prelude, serverIsDynamic)
+  result.prelude = prependCompletenessMarker(
+    result.prelude,
+    serverIsDynamic
+      ? ResponseCompletenessMarker.Partial
+      : ResponseCompletenessMarker.Complete
+  )
 
   return {
     result,
@@ -5333,9 +5332,17 @@ async function prerenderToStream(
         tracingMetadata: tracingMetadata,
       })
 
-      const flightData = await streamToBuffer(reactServerResult.asStream())
-      const isPartialMarker = Buffer.from([serverIsDynamic ? 0x7e : 0x23])
-      metadata.flightData = Buffer.concat([isPartialMarker, flightData])
+      metadata.flightData = await streamToBuffer(
+        prependCompletenessMarker(
+          reactServerResult.asStream(),
+          serverIsDynamic
+            ? ResponseCompletenessMarker.Partial
+            : ResponseCompletenessMarker.Static
+        )
+      )
+
+      // collectSegmentData needs the raw flight data without the marker byte.
+      const flightData = metadata.flightData.subarray(1)
       metadata.segmentData = await collectSegmentData(
         flightData,
         finalServerPrerenderStore,
