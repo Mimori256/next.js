@@ -10,6 +10,7 @@ import {
 import { InvariantError } from '../../../shared/lib/invariant-error'
 import type {
   FlightRouterState,
+  InitialRSCPayload,
   NavigationFlightResponse,
 } from '../../../shared/lib/app-router-types'
 
@@ -65,8 +66,12 @@ export interface FetchServerResponseOptions {
   readonly isHmrRefresh?: boolean
 }
 
-export type StaticStageData = {
-  readonly response: NavigationFlightResponse
+export type StaticStageData<
+  T extends
+    | NavigationFlightResponse
+    | InitialRSCPayload = NavigationFlightResponse,
+> = {
+  readonly response: T
   readonly isFullyStatic: boolean
 }
 
@@ -385,11 +390,13 @@ export async function processFetch(response: Response): Promise<{
  *   byte boundary and decode.
  * - Otherwise: no cache-worthy data.
  */
-async function resolveStaticStageData(
+export async function resolveStaticStageData<
+  T extends NavigationFlightResponse | InitialRSCPayload,
+>(
   cacheData: FetchResponseCacheData,
-  flightResponse: NavigationFlightResponse,
-  headers: RequestHeaders
-): Promise<StaticStageData | null> {
+  flightResponse: T,
+  headers: RequestHeaders | undefined
+): Promise<StaticStageData<T> | null> {
   const { completenessMarker, responseBodyClone } = cacheData
   const isFullyStatic = completenessMarker === ResponseCompletenessMarker.Static
 
@@ -401,20 +408,13 @@ async function resolveStaticStageData(
   }
 
   if (flightResponse.l !== undefined) {
-    // Partially static — truncate the body clone at the byte boundary.
-    const staticStageByteLength = await flightResponse.l
-
-    const truncatedStream = truncateStream(
+    // Partially static - truncate the body clone at the byte boundary and
+    // decode it.
+    const response = await decodeStaticStage<T>(
       responseBodyClone,
-      staticStageByteLength
+      flightResponse.l,
+      headers
     )
-
-    const response =
-      await createFromNextReadableStream<NavigationFlightResponse>(
-        truncatedStream,
-        headers,
-        { allowPartialStream: true }
-      )
 
     return { response, isFullyStatic }
   }
@@ -423,6 +423,28 @@ async function resolveStaticStageData(
   responseBodyClone.cancel()
 
   return null
+}
+
+/**
+ * Truncates a Flight stream clone at the given byte boundary and decodes the
+ * static stage prefix. Used by both the navigation path and the initial HTML
+ * hydration path.
+ */
+export async function decodeStaticStage<T>(
+  responseBodyClone: ReadableStream<Uint8Array>,
+  staticStageByteLengthPromise: Promise<number>,
+  headers: RequestHeaders | undefined
+): Promise<T> {
+  const staticStageByteLength = await staticStageByteLengthPromise
+
+  const truncatedStream = truncateStream(
+    responseBodyClone,
+    staticStageByteLength
+  )
+
+  return createFromNextReadableStream<T>(truncatedStream, headers, {
+    allowPartialStream: true,
+  })
 }
 
 export async function createFetch<T>(
@@ -586,7 +608,7 @@ export async function createFetch<T>(
 
 export function createFromNextReadableStream<T>(
   flightStream: ReadableStream<Uint8Array>,
-  requestHeaders: RequestHeaders,
+  requestHeaders: RequestHeaders | undefined,
   options?: { allowPartialStream?: boolean }
 ): Promise<T> {
   return createFromReadableStream(flightStream, {
