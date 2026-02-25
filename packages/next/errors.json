@@ -1073,5 +1073,16 @@
   "1072": "Missing segment data: <head>",
   "1073": "Expected static stage body to be available",
   "1074": "Page \"%s\" cannot use both \"use client\" and export const \"unstable_instant\".",
-  "1075": "Page \"%s\" cannot export \"unstable_instant\" from a Client Component module. To use this API, convert this module to a Server Component by removing the \"use client\" directive."
+  "1075": "Page \"%s\" cannot export \"unstable_instant\" from a Client Component module. To use this API, convert this module to a Server Component by removing the \"use client\" directive.",
+  "1076": "Worker pool is ending, no more calls can be made",
+  "1077": "Worker exited with code %s%s",
+  "1078": "This file must be run as a worker thread",
+  "1079": "Worker pool closed",
+  "1080": "Child can only be used on a forked process",
+  "1081": "Error when calling setup: %s",
+  "1082": "Worker pool ended before task could be processed",
+  "1083": "\"null\" or \"undefined\" thrown",
+  "1084": "Unexpected request from parent process: %s",
+  "1085": "Worker exited unexpectedly with code %s, signal %s",
+  "1086": "Worker restarted due to timeout"
 }
