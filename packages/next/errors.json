@@ -1084,5 +1084,8 @@
   "1083": "\"null\" or \"undefined\" thrown",
   "1084": "Unexpected request from parent process: %s",
   "1085": "Worker exited unexpectedly with code %s, signal %s",
-  "1086": "Worker restarted due to timeout"
+  "1086": "Worker restarted due to timeout",
+  "1087": "maxBootingWorkers must be at least 1",
+  "1088": "Worker exited during shutdown",
+  "1089": "Worker pool ended while requests were in-flight"
 }
